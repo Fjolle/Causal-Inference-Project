@@ -106,3 +106,173 @@ stargazer(Time_of_day,Trip_time,Trip_type,City,Distance,Exchange_Rate, type = "t
 
 ```
 
+
+
+
+```{r}
+categories <- New_uber2$temperature_value
+
+New_uber2 <- New_uber %>%
+  filter(temperature_value >= 0 & temperature_value <= 20)
+
+Time_of_day <- split(New_uber2$time_of_day, cut(New_uber2$temperature_value, 11)) %>%
+  lapply(mean) %>%
+  unlist()
+agg_New_uber_Time_of_day <- data.frame(Time_of_day = Time_of_day, temperature_value = seq(-20, 20, by = 4))
+
+
+Trip_time <- split(New_uber2$trip_time_minutes, cut(New_uber2$temperature_value, 11)) %>%
+  lapply(mean) %>%
+  unlist()
+agg_New_uber_Trip_time <- data.frame(Trip_time = Trip_time, temperature_value = seq(-20, 20, by = 4))
+
+
+Trip_type <- split(New_uber2$trip_type_dummy, cut(New_uber2$temperature_value, 11)) %>%
+  lapply(mean) %>%
+  unlist()
+agg_New_uber_Trip_type <- data.frame(Trip_type = Trip_type, temperature_value = seq(-20, 20, by = 4))
+
+
+City <- split(New_uber2$if_city_sp, cut(New_uber2$temperature_value, 11)) %>%
+  lapply(mean) %>%
+  unlist()
+agg_New_uber_City <- data.frame(City = City, temperature_value = seq(-20, 20, by = 4))
+
+
+
+Distance <- split(New_uber2$distance_kms, cut(New_uber2$temperature_value, 11)) %>%
+  lapply(mean) %>%
+  unlist()
+agg_New_uber_Distance <- data.frame(Distance = Distance, temperature_value = seq(-20, 20, by = 4))
+
+
+
+Exchange_Rate <- split(New_uber2$rub_usd_exchange_rate, cut(New_uber2$temperature_value, 11)) %>%
+  lapply(mean) %>%
+  unlist()
+agg_New_uber_Exchange_Rate <- data.frame(Exchange_Rate = Exchange_Rate, temperature_value = seq(-20, 20, by = 4))
+
+
+
+New_uber2 <- New_uber2 %>%
+  mutate(gg_group = case_when(temperature_value > 0 ~ 20, TRUE ~ 0))
+
+```
+
+
+
+
+```{r}
+#Time_of_day
+linear_Time_of_day <- ggplot(New_uber2, aes(temperature_value, Time_of_day)) +
+  geom_point(aes(x = temperature_value, y = Time_of_day), data = agg_New_uber_Time_of_day) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Time_of_day, group = gg_group), method = "lm") + 
+  labs(x = "Temperature Value")
+quadratic_Time_of_day <- ggplot(New_uber2, aes(temperature_value, Time_of_day)) +
+  geom_point(aes(x = temperature_value, y = Time_of_day), data = agg_New_uber_Time_of_day) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Time_of_day, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
+  labs(x = "Temperature Value")
+
+
+
+#Trip_time
+linear_Trip_time <- ggplot(New_uber2, aes(temperature_value, Trip_time)) +
+  geom_point(aes(x = temperature_value, y = Trip_time), data = agg_New_uber_Trip_time) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Trip_time, group = gg_group), method = "lm") +
+  labs(x = "Temperature Value")
+quadratic_Trip_time <- ggplot(New_uber2, aes(temperature_value, Trip_time)) +
+  geom_point(aes(x = temperature_value, y = Trip_time), data = agg_New_uber_Trip_time) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Trip_time, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
+  labs(x = "Temperature Value")
+
+
+
+#Trip_type
+linear_Trip_type <- ggplot(New_uber2, aes(temperature_value, Trip_type)) +
+  geom_point(aes(x = temperature_value, y = Trip_type), data = agg_New_uber_Trip_type) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Trip_type, group = gg_group), method = "lm") +
+  labs(x = "Temperature Value")
+quadratic_Trip_type <- ggplot(New_uber2, aes(temperature_value, Trip_type)) +
+  geom_point(aes(x = temperature_value, y = Trip_type), data = agg_New_uber_Trip_type) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Trip_type, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
+  labs(x = "Temperature Value")
+
+
+
+#City
+linear_City <- ggplot(New_uber2, aes(temperature_value, City)) +
+  geom_point(aes(x = temperature_value, y = City), data = agg_New_uber_City) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, City, group = gg_group), method = "lm") +
+  labs(x = "Temperature Value")
+quadratic_City <- ggplot(New_uber2, aes(temperature_value, City)) +
+  geom_point(aes(x = temperature_value, y = Cityd), data = agg_New_uber_City) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, City, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
+  labs(x = "Temperature Value") 
+
+
+#Distance
+linear_Distance <- ggplot(New_uber2, aes(temperature_value, Distance)) +
+  geom_point(aes(x = temperature_value, y = Distance), data = agg_New_uber_City) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Distance, group = gg_group), method = "lm") +
+  labs(x = "Temperature Value")
+quadratic_Distance<- ggplot(New_uber2, aes(temperature_value, Distance)) +
+  geom_point(aes(x = temperature_value, y = Cityd), data = agg_New_uber_City) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Distance, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
+  labs(x = "Temperature Value") 
+
+
+#Exchange_Rate
+linear_Exchange_Rate <- ggplot(New_uber2, aes(temperature_value, Exchange_Rate)) +
+  geom_point(aes(x = temperature_value, y = Exchange_Rate), data = agg_New_uber_City) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Exchange_Rate, group = gg_group), method = "lm") +
+  labs(x = "Temperature Value")
+quadratic_Exchange_Rate <- ggplot(New_uber2, aes(temperature_value, Exchange_Rate)) +
+  geom_point(aes(x = temperature_value, y = Cityd), data = agg_New_uber_City) +
+  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
+  stat_smooth(aes(temperature_value, Exchange_Rate, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
+  labs(x = "Temperature Value") 
+
+```
+
+
+
+```{r}
+library(gridExtra)
+grid.arrange(linear_Time_of_day, linear_Trip_time, linear_Trip_type, linear_City,linear_Distance,linear_Exchange_Rate, nrow=7, top="Linear Discontinuity: predetermined Characteristics")
+grid.arrange(quadratic_Time_of_day, quadratic_Trip_time, quadratic_Trip_type, quadratic_City, quadratic_Distance, quadratic_Exchange_Rate, nrow=7, top="Quadratic Discontinuity: predetermined Characteristics") 
+
+```
+
+
+
+```{r}
+RDestimate(price_per_kms_usd ~ temperature_value, cutpoint = 0, bw = 20, data=New_uber)
+RDHonest(price_per_kms_usd ~ temperature_value, cutoff = 0, h=20, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
+
+RDestimate(price_per_kms_usd ~ temperature_value | temperature_value*cutoff, cutpoint = 0, bw = 20, data=New_uber)
+RDHonest(price_per_kms_usd ~ temperature_value + temperature_value*cutoff, cutoff = 0, h=20, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
+
+RDestimate(price_per_kms_usd ~ temperature_value | temperature_value*cutoff + (temperature_value^2)*cutoff, cutpoint = 0, bw = 20, data=New_uber)
+RDHonest(price_per_kms_usd ~ temperature_value + temperature_value*cutoff + (temperature_value^2)*cutoff, cutoff = 0, h=20, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
+
+RDestimate(price_per_kms_usd ~ temperature_value, cutpoint = 0, bw = 40, data=New_uber)
+RDHonest(price_per_kms_usd ~ temperature_value, cutoff = 0, h=40, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
+
+RDestimate(price_per_kms_usd ~ temperature_value | temperature_value*cutoff, cutpoint = 0, bw = 40, data=New_uber)
+RDHonest(price_per_kms_usd ~ temperature_value + temperature_value*cutoff, cutoff = 0, h=40, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
+
+RDestimate(price_per_kms_usd ~ temperature_value | temperature_value*cutoff + (temperature_value^2)*cutoff, cutpoint = 0, bw = 40, data=New_uber)
+RDHonest(price_per_kms_usd ~ temperature_value + temperature_value*cutoff + (temperature_value^2)*cutoff, cutoff = 0, h=40, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
+
+```
