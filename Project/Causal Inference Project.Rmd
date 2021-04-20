@@ -79,7 +79,7 @@ ggplot(New_uber, aes(x=New_uber$temperature_value))+
   theme_minimal()
 
 ```
-There is heaping in the histogram near the 0.08 cutoff
+There is heaping in the histogram near the 0 cutoff
 
 ```{r, warning=FALSE, include=FALSE}
 New_uber2 <- New_uber %>%
