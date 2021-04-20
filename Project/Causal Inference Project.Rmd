@@ -5,7 +5,13 @@ output: html_document
 ---
 
 Around 10 years ago, in San Francisco, CA, a company named UberCap started operating by enabling riders to hail a car with a
-smart phone. Since then, the company has extended its operation in 65 countries and more than 700 cities around the world (1).Whether you are doing grocery shopping or visiting a new city, the uber app is a quick and convenient way to connect you with nearby drivers. All the rider needs to do is create an account with just an email address and a phone number. Once that step is done, you click on the app and enter the destination, check for nearby drivers and the price for the ride, confirm your pickup location and wait for your driver to show up.(2)  In 2014 Uber has announced its operation in Moscow, and today it has a presence in 16 cities in Russia.(3)  Provided whether conditions in Russia tend to be rather extreme with temperature levels significantly below freezing during winter to very high temperatures in the summer. Because of that, I thought it might be of interest to know whether or not temperature level matters when it comes to pricing of uber rides. Weather condition is not the only factor that affects surge pricing for uber. For this reason, I control for multiple covariates in the data set that would have an effect on pricing schemes. The first variable I control for is the time of the day. Since uber operates based on the demand for drivers and the supply of drivers, it is intuitive to think that during rush hour demand will exceed supply. When that happens it is natural for prices to increase also.(4) Uber charges more if it thinks you are willing to pay more (5).The second variable I control for is trip time. The longer the trip, the higher the price changed to the uber rider. The third covariate I control for is trip type.  “Uber” stands for a range of services available within the Uber app. Some of the uber services provided are UberX, UberXL, UberSELECT, UberBLACK, and many more.(6) Depending which one of these uber services you request, you will be changed a higher or a lower price per ride. I create an indicator variable that equals 1 if the uber ride requested is an UberX, and 0 otherwise. This allows me to control for the variable and cap its impact that it has on the overall uber prices. The fifth variable I control for is city. The price for requesting an uber in Saint Petersburg would be a lot different than an uber requested in the rural areas of Russia.Hence, depending on the city uber prices can be significantly different, and hence we need to control for this. Another variable I control for is distance. This relates to the control variable trip time. The longer the distance travelled, the higher the price changed to the uber rider. Since we want to isolate the effect of temperature on prices, we do not want distance to cause any endogeneity, and hence we control for it. The sixth variable I control for is the exchange rate. Since uber is a US company, the daily exchange rate between Russian ruble and the American dollar, will also affect the prices charged on uber rides in Russia. 
+smart phone. Since then, the company has extended its operation in 65 countries and more than 700 cities around the world (1).Whether you are doing grocery shopping or visiting a new city, the uber app is a quick and convenient way to connect you with nearby drivers. All the rider needs to do is create an account with just an email address and a phone number. Once that step is done, you click on the app and enter the destination, check for nearby drivers and the price for the ride, confirm your pickup location and wait for your driver to show up.(2)  In 2014 Uber has announced its operation in Moscow, and today it has a presence in 16 cities in Russia.(3)  Weather conditions in Russia tend to be rather extreme with temperature levels significantly below freezing levels during winter to very high temperatures in the summer. That being said, it might be of interest to know whether or not temperature level matters when it comes to pricing of uber rides. Weather condition is not the only factor that affects surge pricing for uber.  Multiple other covariates such as time of the day, trip time, trip type, city, distance and exchange rate also have an effect on surge pricing. Since we want to isolate the effect of temperature on prices and need to make sure that the results are robust from endogeneity, we need to control for other covariates having an impact on surge pricing.
+
+This paper is organized as follows: In the first section, in order to see the effect of temperature levels below and above the freezing point, I begin by creating an indicator variable as a cutoff point for a temperature level of zero degrees celcius. I continue by implementing a manipulation test using the rddensity using the local polynomial density estimators implemented by Cattaneo, Jansson and Ma (2020). (4) This command constructs a graphical picture with valid confidence bands of any manipulation("sorting on the running variable") in the data below or after the cutoff point. This is a density estimation technique that prevents the data from pre-binning and enables restrictions on other model features. (5) I also use the companion command rdplotdensity in order to visually construct the density plot. Through a histogram plot I show that there seems to be some evidence of non-random heaping that might lead to a biased Regression Discontinuity Design. In the second section I check for covariate balance to find out whether or not covariates are balanced at the cutoff. I pay attention to both the sign and the magnitude of the estimates in order to draw any conclusions. In the third section I fit both linear and quadratic models with confidence intervals for each individual covariate in order to show whether I observe any major jumps in the variables themselves above and below the cutoff point. Section 4 presents and discusses the main results, and section 5 summarizes the main conclusions of the paper.
+
+
+
+
 
 
 
@@ -13,9 +19,11 @@ sources:
 (1):https://www.cnbc.com/2019/11/08/top-ride-sharing-apps-in-europe-asia-south-america-africa-and-usa.html
 (2) https://www.uber.com/us/en/ride/how-it-works/
 (3) https://www.theverge.com/2017/7/13/15963754/uber-yandex-merger-russia
-(4) https://www.thepennyhoarder.com/save-money/beat-uber-surge-pricing/
-(5) https://www.forbes.com/sites/nicolemartin1/2019/03/30/uber-charges-more-if-they-think-youre-willing-to-pay-more/?sh=536a77987365
-(6) https://www.ridester.com/uberx-vs-uber/
+(4) https://cattaneo.princeton.edu/papers/Cattaneo-Jansson-Ma_2021_JSS.pdf
+(5) https://eml.berkeley.edu/~mjansson/Papers/CattaneoJanssonMa18.pdf
+(6) https://www.thepennyhoarder.com/save-money/beat-uber-surge-pricing/
+(7) https://www.forbes.com/sites/nicolemartin1/2019/03/30/uber-charges-more-if-they-think-youre-willing-to-pay-more/?sh=536a77987365
+(8) https://www.ridester.com/uberx-vs-uber/
 
 
 
@@ -58,9 +66,9 @@ New_uber$cutoff=ifelse(New_uber$temperature_value<=0,1,0)
 ```{r, warning=FALSE, include=FALSE}
 density <- rddensity(New_uber$temperature_value, c = 0)
 rdplotdensity(density, New_uber$temperature_value)
-
 ```
 
+In this regression discontinuity density test we can see some clear evidence of manipulation on the running variable above and below the 0 cutoff point. There is a clear jump and a discontinuos graph around the cutoff point.
 
 ```{r, warning=FALSE, include=FALSE}
 
@@ -71,7 +79,7 @@ ggplot(New_uber, aes(x=New_uber$temperature_value))+
   theme_minimal()
 
 ```
-
+There is heaping in the histogram near the 0.08 cutoff
 
 ```{r, warning=FALSE, include=FALSE}
 New_uber2 <- New_uber %>%
@@ -107,6 +115,7 @@ stargazer(Time_of_day,Trip_time,Trip_type,City,Distance,Exchange_Rate, type = "t
 ```
 
 
+The first variable I control for is the time of the day. Since uber operates based on the demand for drivers and the supply of drivers, it is intuitive to think that during rush hour demand will exceed supply. When that happens it is natural for prices to increase also.(6) Uber charges more if it thinks you are willing to pay more (7).The second variable I control for is trip time. The longer the trip, the higher the price changed to the uber rider. The third covariate I control for is trip type.  “Uber” stands for a range of services available within the Uber app. Some of the uber services provided are UberX, UberXL, UberSELECT, UberBLACK, and many more.(8) Depending which one of these uber services you request, you will be changed a higher or a lower price per ride. I create an indicator variable that equals 1 if the uber ride requested is an UberX, and 0 otherwise. This allows me to control for the variable and cap its impact that it has on the overall uber prices. The fourth variable I control for is city. The price for requesting an uber in Saint Petersburg would be a lot different than an uber requested in the rural areas of Russia.Hence, depending on the city uber prices can be significantly different, and hence we need to control for this. Another variable I control for is distance. This relates to the control variable trip time. The longer the distance travelled, the higher the price changed to the uber rider. Since we want to isolate the effect of temperature on prices, we do not want distance to cause any endogeneity, and hence we control for it. The sixth variable I control for is the exchange rate. Since uber is a US company, the daily exchange rate between Russian ruble and the American dollar, will also affect the prices charged on uber rides in Russia. 
 
 
 ```{r}
