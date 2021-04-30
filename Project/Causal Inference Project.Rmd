@@ -7,7 +7,7 @@ output: html_document
 Around 10 years ago, in San Francisco, CA, a company named UberCap started operating by enabling riders to hail a car with a
 smart phone. Since then, the company has extended its operation in 65 countries and more than 700 cities around the world (1).Whether you are doing grocery shopping or visiting a new city, the uber app is a quick and convenient way to connect you with nearby drivers. All the rider needs to do is create an account with just an email address and a phone number. Once that step is done, you click on the app and enter the destination, check for nearby drivers and the price for the ride, confirm your pickup location and wait for your driver to show up.(2)  In 2014 Uber has announced its operation in Moscow, and today it has a presence in 16 cities in Russia.(3)  Weather conditions in Russia tend to be rather extreme with temperature levels significantly below freezing levels during winter to very high temperatures in the summer. That being said, it might be of interest to know whether or not temperature level matters when it comes to pricing of uber rides. Weather condition is not the only factor that affects surge pricing for uber.  Multiple other covariates such as time of the day, trip time, trip type, city, distance and exchange rate also have an effect on surge pricing. Since we want to isolate the effect of temperature on prices and need to make sure that the results are robust from endogeneity, we need to control for other covariates having an impact on surge pricing. 
 
-This paper is organized as follows: In the first section I describe my data methodology by briefing the data set and the methods used to perform a regression discontinuity design. In the second section, in order to see the effect of temperature levels below and above the freezing point, I begin by creating an indicator variable as a cutoff point for a temperature level of zero degrees celcius. I continue by implementing a manipulation test using the rddensity using the local polynomial density estimators implemented by Cattaneo, Jansson and Ma (2020). (4) This command constructs a graphical picture with valid confidence bands of any manipulation("sorting on the running variable") in the data below or after the cutoff point. This is a density estimation technique that prevents the data from pre-binning and enables restrictions on other model features. (5) I also use the companion command rdplotdensity in order to visually construct the density plot. Through a histogram plot I show that there seems to be some evidence of non-random heaping that might lead to a biased Regression Discontinuity Design. In the third section I check for covariate balance to find out whether or not covariates are balanced at the cutoff. I pay attention to both the sign and the magnitude of the estimates in order to draw any conclusions. In the fourth section I fit both linear and quadratic models with confidence intervals for each individual covariate in order to show whether I observe any major jumps in the variables themselves above and below the cutoff point. Section five presents and discusses the main results, and section six summarizes the main conclusions of the paper.
+This paper is organized as follows: In the first section I describe my data methodology by briefing the data set and the methods used to perform a regression discontinuity design. In the second section, in order to see the effect of temperature levels below and above the freezing point, I begin by creating an indicator variable as a cutoff point for a temperature level of zero degrees celcius. I continue by implementing a manipulation New_uber using the rddensity using the local polynomial density estimators implemented by Cattaneo, Jansson and Ma (2020). (4) This command constructs a graphical picture with valid confidence bands of any manipulation("sorting on the running variable") in the data below or after the cutoff point. This is a density estimation technique that prevents the data from pre-binning and enables restrictions on other model features. (5) I also use the companion command rdplotdensity in order to visually construct the density plot. Through a histogram plot I show that there seems to be some evidence of non-random heaping that might lead to a biased Regression Discontinuity Design. In the third section I check for covariate balance to find out whether or not covariates are balanced at the cutoff. I pay attention to both the sign and the magnitude of the estimates in order to draw any conclusions.  Section four presents and discusses the main results, and section five summarizes the main conclusions of the paper.
 
 
 
@@ -37,20 +37,6 @@ The following variables are used for the analysis that follows:
 
 
 
-sources: 
-(1):https://www.cnbc.com/2019/11/08/top-ride-sharing-apps-in-europe-asia-south-america-africa-and-usa.html
-(2) https://www.uber.com/us/en/ride/how-it-works/
-(3) https://www.theverge.com/2017/7/13/15963754/uber-yandex-merger-russia
-(4) https://cattaneo.princeton.edu/papers/Cattaneo-Jansson-Ma_2021_JSS.pdf
-(5) https://eml.berkeley.edu/~mjansson/Papers/CattaneoJanssonMa18.pdf
-(6) https://www.thepennyhoarder.com/save-money/beat-uber-surge-pricing/
-(7) https://www.forbes.com/sites/nicolemartin1/2019/03/30/uber-charges-more-if-they-think-youre-willing-to-pay-more/?sh=536a77987365
-(8) https://www.ridester.com/uberx-vs-uber/
-(9) https://stantyan.com/#
-(10)https://www.kaggle.com/
-
-
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -60,17 +46,23 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, warning=FALSE, include=FALSE, echo=FALSE}
 library(rddensity)
+library(ggplot2)
 library(tidyverse)
 library(rmarkdown)
 library(stargazer)
 library(RDHonest)
+library(rdrobust)
+library(rdd)
+library(ggthemes)
+
+New_uber<-read_csv('https://raw.githubusercontent.com/Fjolle/Causal-Inference-Project/main/Data/New_uber.csv')
+
 
 New_uber <- New_uber %>% 
   as_tibble() %>%  
   janitor::clean_names() %>% 
   glimpse() 
 ```
-
 
 
 QUESTION:Does uber charge differently based on temperature levels?
@@ -82,40 +74,38 @@ Cutoff point: 0 degrees celcius
 
 
 
-```{r, warning=FALSE, include=FALSE}
+```{r, warning=FALSE}
 New_uber$cutoff=ifelse(New_uber$temperature_value<=0,1,0)
 ```
 
 
-```{r, warning=FALSE, include=FALSE}
+```{r, warning=FALSE}
 density <- rddensity(New_uber$temperature_value, c = 0)
 rdplotdensity(density, New_uber$temperature_value)
 ```
 
-In this regression discontinuity density test we can see some clear evidence of manipulation on the running variable above and below the 0 cutoff point. There is a clear jump and a discontinuos graph around the cutoff point.
+In this regression discontinuity density New_uber we can see some clear evidence of manipulation on the running variable above and below the 0 cutoff point. There is a clear jump and a discontinuos graph around the cutoff point.
 
-```{r, warning=FALSE, include=FALSE}
+```{r, warning=FALSE}
 
 ggplot(New_uber, aes(x=New_uber$temperature_value))+
   geom_histogram(binwidth=2,fill = 'lightblue', color = 'black')+
   geom_vline(xintercept=0)+
   labs(title = "McCrary Density for Running Variable", x = "Running Variable: Temperature Value", y = "Density")+
   theme_minimal()
-
 ```
+
 There is heaping in the histogram near the 0 cutoff
 
-```{r, warning=FALSE, include=FALSE}
+```{r, warning=FALSE}
 New_uber2 <- New_uber %>%
   mutate(temperature_value_2 = temperature_value - 0)
 New_uber2 <- New_uber2 %>%
-  filter(temperature_value_2 >=-20 & temperature_value_2 <= 20)
+  filter(temperature_value_2 >=-25 & temperature_value_2 <= 25)
 ```
 
 
 ```{r, warning=FALSE, include=FALSE}
-No_rush_hour <- New_uber %>%
-  filter(time_of_day_disc <=10 & time_of_day_disc >=13)
 Time_of_day = lm(time_of_day_disc ~ cutoff*temperature_value_2, data=New_uber2)
 stargazer(Time_of_day, type = "text")
 
@@ -134,164 +124,44 @@ stargazer(Distance, type = "text")
 Exchange_Rate= lm(rub_usd_exchange_rate ~ cutoff*temperature_value_2, data=New_uber2)
 stargazer(Exchange_Rate, type = "text")
 
-stargazer(Time_of_day,Trip_time,Trip_type,City,Distance,Exchange_Rate, type = "text")
+Precip= lm(precipitation_dummy ~ cutoff*temperature_value_2, data=New_uber2)
+stargazer(Exchange_Rate, type = "text")
 
+Gender= lm(driver_gender_dummy ~ cutoff*temperature_value_2, data=New_uber2)
+stargazer(Exchange_Rate, type = "text")
 ```
 
-
+```{r, warning=FALSE}
+stargazer(Time_of_day,Trip_time,Trip_type,Precip, type = "text")
+stargazer(City,Distance,Exchange_Rate,Gender, type = "text")
+```
 The first variable I control for is the time of the day. Since uber operates based on the demand for drivers and the supply of drivers, it is intuitive to think that during rush hour demand will exceed supply. When that happens it is natural for prices to increase also.(6) Uber charges more if it thinks you are willing to pay more (7).The second variable I control for is trip time. The longer the trip, the higher the price changed to the uber rider. The third covariate I control for is trip type.  “Uber” stands for a range of services available within the Uber app. Some of the uber services provided are UberX, UberXL, UberSELECT, UberBLACK, and many more.(8) Depending which one of these uber services you request, you will be changed a higher or a lower price per ride. I create an indicator variable that equals 1 if the uber ride requested is an UberX, and 0 otherwise. This allows me to control for the variable and cap its impact that it has on the overall uber prices. The fourth variable I control for is city. The price for requesting an uber in Saint Petersburg would be a lot different than an uber requested in the rural areas of Russia.Hence, depending on the city uber prices can be significantly different, and hence we need to control for this. Another variable I control for is distance. This relates to the control variable trip time. The longer the distance travelled, the higher the price changed to the uber rider. Since we want to isolate the effect of temperature on prices, we do not want distance to cause any endogeneity, and hence we control for it. The sixth variable I control for is the exchange rate. Since uber is a US company, the daily exchange rate between Russian ruble and the American dollar, will also affect the prices charged on uber rides in Russia. 
 
 
 Some of these results do not prove to be favorable since the coefficients such as time_of_day_disc, trip_time_minutes, distance_kms as well as the rub_usd_exchange_rate are significantly different from 0, which means they are significantly affected by exceeding the cutoff. As such, the covariates do not appear to be balanced near the cutoff.
 
-```{r}
-categories <- New_uber2$temperature_value
+```{r, warning=FALSE}
+rdplot(New_uber$time_of_day_disc, New_uber$temperature_value, p=3, c=10, y.label='Time of the day', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
 
-New_uber2 <- New_uber %>%
-  filter(temperature_value >= 0 & temperature_value <= 20)
+rdplot(New_uber$trip_type_dummy, New_uber$temperature_value, p=3, c=0, y.label='Trip type', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
 
-Time_of_day <- split(New_uber2$time_of_day, cut(New_uber2$temperature_value, 11)) %>%
-  lapply(mean) %>%
-  unlist()
-agg_New_uber_Time_of_day <- data.frame(Time_of_day = Time_of_day, temperature_value = seq(-20, 20, by = 4))
+rdplot(New_uber$driver_gender_dummy, New_uber$temperature_value, p=3, c=0, y.label='Gender', x.label='Temperature value', kernel="triangular" , ci=NULL,col.dots = 'red', col.lines = 'blue')
 
+rdplot(New_uber$precipitation_dummy, New_uber$temperature_value, p=3, c=0, y.label='Precipitation', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
 
-Trip_time <- split(New_uber2$trip_time_minutes, cut(New_uber2$temperature_value, 11)) %>%
-  lapply(mean) %>%
-  unlist()
-agg_New_uber_Trip_time <- data.frame(Trip_time = Trip_time, temperature_value = seq(-20, 20, by = 4))
+rdplot(New_uber$if_city_sp, New_uber$temperature_value, p=3, c=0, y.label='City', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
 
+rdplot(New_uber$distance_kms, New_uber$temperature_value, p=3, c=0, y.label='Dinstance in km', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
 
-Trip_type <- split(New_uber2$trip_type_dummy, cut(New_uber2$temperature_value, 11)) %>%
-  lapply(mean) %>%
-  unlist()
-agg_New_uber_Trip_type <- data.frame(Trip_type = Trip_type, temperature_value = seq(-20, 20, by = 4))
+rdplot(New_uber$trip_time_minutes, New_uber$temperature_value, p=3, c=0, y.label='Trip time in minutes', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
 
-
-City <- split(New_uber2$if_city_sp, cut(New_uber2$temperature_value, 11)) %>%
-  lapply(mean) %>%
-  unlist()
-agg_New_uber_City <- data.frame(City = City, temperature_value = seq(-20, 20, by = 4))
-
-
-
-Distance <- split(New_uber2$distance_kms, cut(New_uber2$temperature_value, 11)) %>%
-  lapply(mean) %>%
-  unlist()
-agg_New_uber_Distance <- data.frame(Distance = Distance, temperature_value = seq(-20, 20, by = 4))
-
-
-
-Exchange_Rate <- split(New_uber2$rub_usd_exchange_rate, cut(New_uber2$temperature_value, 11)) %>%
-  lapply(mean) %>%
-  unlist()
-agg_New_uber_Exchange_Rate <- data.frame(Exchange_Rate = Exchange_Rate, temperature_value = seq(-20, 20, by = 4))
-
-
-
-New_uber2 <- New_uber2 %>%
-  mutate(gg_group = case_when(temperature_value > 0 ~ 20, TRUE ~ 0))
-
+rdplot(New_uber$rub_usd_exchange_rate, New_uber$temperature_value, p=3, c=0, y.label='Exchange rate', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
 ```
 
 
 
-
-```{r}
-#Time_of_day
-linear_Time_of_day <- ggplot(New_uber2, aes(temperature_value, Time_of_day)) +
-  geom_point(aes(x = temperature_value, y = Time_of_day), data = agg_New_uber_Time_of_day) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Time_of_day, group = gg_group), method = "lm") + 
-  labs(x = "Temperature Value")
-quadratic_Time_of_day <- ggplot(New_uber2, aes(temperature_value, Time_of_day)) +
-  geom_point(aes(x = temperature_value, y = Time_of_day), data = agg_New_uber_Time_of_day) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Time_of_day, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
-  labs(x = "Temperature Value")
-
-
-
-#Trip_time
-linear_Trip_time <- ggplot(New_uber2, aes(temperature_value, Trip_time)) +
-  geom_point(aes(x = temperature_value, y = Trip_time), data = agg_New_uber_Trip_time) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Trip_time, group = gg_group), method = "lm") +
-  labs(x = "Temperature Value")
-quadratic_Trip_time <- ggplot(New_uber2, aes(temperature_value, Trip_time)) +
-  geom_point(aes(x = temperature_value, y = Trip_time), data = agg_New_uber_Trip_time) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Trip_time, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
-  labs(x = "Temperature Value")
-
-
-
-#Trip_type
-linear_Trip_type <- ggplot(New_uber2, aes(temperature_value, Trip_type)) +
-  geom_point(aes(x = temperature_value, y = Trip_type), data = agg_New_uber_Trip_type) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Trip_type, group = gg_group), method = "lm") +
-  labs(x = "Temperature Value")
-quadratic_Trip_type <- ggplot(New_uber2, aes(temperature_value, Trip_type)) +
-  geom_point(aes(x = temperature_value, y = Trip_type), data = agg_New_uber_Trip_type) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Trip_type, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
-  labs(x = "Temperature Value")
-
-
-
-#City
-linear_City <- ggplot(New_uber2, aes(temperature_value, City)) +
-  geom_point(aes(x = temperature_value, y = City), data = agg_New_uber_City) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, City, group = gg_group), method = "lm") +
-  labs(x = "Temperature Value")
-quadratic_City <- ggplot(New_uber2, aes(temperature_value, City)) +
-  geom_point(aes(x = temperature_value, y = Cityd), data = agg_New_uber_City) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, City, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
-  labs(x = "Temperature Value") 
-
-
-#Distance
-linear_Distance <- ggplot(New_uber2, aes(temperature_value, Distance)) +
-  geom_point(aes(x = temperature_value, y = Distance), data = agg_New_uber_City) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Distance, group = gg_group), method = "lm") +
-  labs(x = "Temperature Value")
-quadratic_Distance<- ggplot(New_uber2, aes(temperature_value, Distance)) +
-  geom_point(aes(x = temperature_value, y = Cityd), data = agg_New_uber_City) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Distance, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
-  labs(x = "Temperature Value") 
-
-
-#Exchange_Rate
-linear_Exchange_Rate <- ggplot(New_uber2, aes(temperature_value, Exchange_Rate)) +
-  geom_point(aes(x = temperature_value, y = Exchange_Rate), data = agg_New_uber_City) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Exchange_Rate, group = gg_group), method = "lm") +
-  labs(x = "Temperature Value")
-quadratic_Exchange_Rate <- ggplot(New_uber2, aes(temperature_value, Exchange_Rate)) +
-  geom_point(aes(x = temperature_value, y = Cityd), data = agg_New_uber_City) +
-  geom_vline(xintercept = 0, colour = "grey", linetype = 2) +
-  stat_smooth(aes(temperature_value, Exchange_Rate, group = gg_group), method = "lm", formula = y ~ x + I(x^2)) +
-  labs(x = "Temperature Value") 
-
-```
-
-
-
-```{r}
-library(gridExtra)
-grid.arrange(linear_Time_of_day, linear_Trip_time, linear_Trip_type, linear_City,linear_Distance,linear_Exchange_Rate, nrow=7, top="Linear Discontinuity: predetermined Characteristics")
-grid.arrange(quadratic_Time_of_day, quadratic_Trip_time, quadratic_Trip_type, quadratic_City, quadratic_Distance, quadratic_Exchange_Rate, nrow=7, top="Quadratic Discontinuity: predetermined Characteristics") 
-
-```
-
-
-
-```{r}
+```{r, warning=FALSE}
+library(rdd)
 RDestimate(price_per_kms_usd ~ temperature_value, cutpoint = 0, bw = 20, data=New_uber)
 RDHonest(price_per_kms_usd ~ temperature_value, cutoff = 0, h=20, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
 
@@ -311,3 +181,18 @@ RDestimate(price_per_kms_usd ~ temperature_value | temperature_value*cutoff + (t
 RDHonest(price_per_kms_usd ~ temperature_value + temperature_value*cutoff + (temperature_value^2)*cutoff, cutoff = 0, h=40, kern="triangular", M=0.1, sclass="T", order = 1, data=New_uber)
 
 ```
+
+
+
+
+sources: 
+(1):https://www.cnbc.com/2019/11/08/top-ride-sharing-apps-in-europe-asia-south-america-africa-and-usa.html
+(2) https://www.uber.com/us/en/ride/how-it-works/
+(3) https://www.theverge.com/2017/7/13/15963754/uber-yandex-merger-russia
+(4) https://cattaneo.princeton.edu/papers/Cattaneo-Jansson-Ma_2021_JSS.pdf
+(5) https://eml.berkeley.edu/~mjansson/Papers/CattaneoJanssonMa18.pdf
+(6) https://www.thepennyhoarder.com/save-money/beat-uber-surge-pricing/
+(7) https://www.forbes.com/sites/nicolemartin1/2019/03/30/uber-charges-more-if-they-think-youre-willing-to-pay-more/?sh=536a77987365
+(8) https://www.ridester.com/uberx-vs-uber/
+(9) https://stantyan.com/#
+(10)https://www.kaggle.com/
