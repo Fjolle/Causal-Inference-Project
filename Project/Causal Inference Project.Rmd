@@ -73,14 +73,13 @@ Cutoff point: 0 degrees celcius
 
 
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, include=FALSE, echo=FALSE}
 New_uber$cutoff=ifelse(New_uber$temperature_value<=0,1,0)
 ```
 
 
 ```{r, warning=FALSE}
-density <- rddensity(New_uber$temperature_value, c = 0)
-rdplotdensity(density, New_uber$temperature_value)
+rdplotdensity(rddensity(New_uber$temperature_value, c = 0), New_uber$temperature_value)
 ```
 
 In this regression discontinuity density New_uber we can see some clear evidence of manipulation on the running variable above and below the 0 cutoff point. There is a clear jump and a discontinuos graph around the cutoff point.
@@ -88,7 +87,7 @@ In this regression discontinuity density New_uber we can see some clear evidence
 ```{r, warning=FALSE}
 
 ggplot(New_uber, aes(x=New_uber$temperature_value))+
-  geom_histogram(binwidth=2,fill = 'lightblue', color = 'black')+
+  geom_histogram(binwidth=2,fill = 'pink', color = 'black')+
   geom_vline(xintercept=0)+
   labs(title = "McCrary Density for Running Variable", x = "Running Variable: Temperature Value", y = "Density")+
   theme_minimal()
@@ -140,21 +139,21 @@ The first variable I control for is the time of the day. Since uber operates bas
 Some of these results do not prove to be favorable since the coefficients such as time_of_day_disc, trip_time_minutes, distance_kms as well as the rub_usd_exchange_rate are significantly different from 0, which means they are significantly affected by exceeding the cutoff. As such, the covariates do not appear to be balanced near the cutoff.
 
 ```{r, warning=FALSE}
-rdplot(New_uber$time_of_day_disc, New_uber$temperature_value, p=3, c=10, y.label='Time of the day', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
+rdplot(New_uber$time_of_day_disc, New_uber$temperature_value, p=3, c=10, y.label='Time of the day', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'pink', col.lines = 'lightblue' )
 
-rdplot(New_uber$trip_type_dummy, New_uber$temperature_value, p=3, c=0, y.label='Trip type', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
+rdplot(New_uber$trip_type_dummy, New_uber$temperature_value, p=3, c=0, y.label='Trip type', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'pink', col.lines = 'lightblue' )
 
-rdplot(New_uber$driver_gender_dummy, New_uber$temperature_value, p=3, c=0, y.label='Gender', x.label='Temperature value', kernel="triangular" , ci=NULL,col.dots = 'red', col.lines = 'blue')
+rdplot(New_uber$driver_gender_dummy, New_uber$temperature_value, p=3, c=0, y.label='Gender', x.label='Temperature value', kernel="triangular" , ci=NULL,col.dots = 'pink', col.lines = 'lightblue')
 
-rdplot(New_uber$precipitation_dummy, New_uber$temperature_value, p=3, c=0, y.label='Precipitation', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
+rdplot(New_uber$precipitation_dummy, New_uber$temperature_value, p=3, c=0, y.label='Precipitation', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'pink', col.lines = 'lightblue' )
 
-rdplot(New_uber$if_city_sp, New_uber$temperature_value, p=3, c=0, y.label='City', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
+rdplot(New_uber$if_city_sp, New_uber$temperature_value, p=3, c=0, y.label='City', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'pink', col.lines = 'lightblue' )
 
-rdplot(New_uber$distance_kms, New_uber$temperature_value, p=3, c=0, y.label='Dinstance in km', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
+rdplot(New_uber$distance_kms, New_uber$temperature_value, p=3, c=0, y.label='Dinstance in km', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'pink', col.lines = 'lightblue' )
 
-rdplot(New_uber$trip_time_minutes, New_uber$temperature_value, p=3, c=0, y.label='Trip time in minutes', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
+rdplot(New_uber$trip_time_minutes, New_uber$temperature_value, p=3, c=0, y.label='Trip time in minutes', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'pink', col.lines = 'lightblue' )
 
-rdplot(New_uber$rub_usd_exchange_rate, New_uber$temperature_value, p=3, c=0, y.label='Exchange rate', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'red', col.lines = 'blue' )
+rdplot(New_uber$rub_usd_exchange_rate, New_uber$temperature_value, p=3, c=0, y.label='Exchange rate', x.label='Temperature value', kernel="triangular", ci=NULL,col.dots = 'pink', col.lines = 'lightblue' )
 ```
 
 
