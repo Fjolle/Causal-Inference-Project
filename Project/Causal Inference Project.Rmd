@@ -42,6 +42,7 @@ The following variables are used for the analysis that follows:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ```{r, warning=FALSE, include=FALSE, echo=FALSE}
 library(rddensity)
 library(ggplot2)
